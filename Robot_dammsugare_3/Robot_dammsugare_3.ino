@@ -30,8 +30,8 @@ void setup() {
   pinMode(MB_Ctrl, OUTPUT);//define control pin of brush motor to OUTPUT
   Serial.begin(9600);
   irrecv.enableIRIn(); // Start the receiver
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
+  pinMode(trigPin, OUTPUT); //define trigpin to OUTPUT
+  pinMode(echoPin, INPUT); //define echopin to INPUT
 }
 
 
@@ -116,8 +116,9 @@ void MODE(){ // MODE is the function that controls what the dust swepper
 }
 
 
-void Auto() {
-  while(1 == 1){
+void Auto() { // if the robot vacium drives within 20 cm of a wall it will turn in 
+              //a random direction else it will continu driving forward.
+  while(1 == 1){ //infinet loop if that will be broken if user hits the stop buton
     if (irrecv.decode(&results)){
     irr_val = results.value;
     if(irr_val == 0x807F30CF){
@@ -134,21 +135,6 @@ void Auto() {
 }
 }
 
-
-int distensToWall() {
-  int wall;
-  delay(250);
-  int interval = distens();
-  Serial.println(interval);
-  delay(250);
-  if (interval < 200 ) {
-    wall = ((interval/40) + 1);
-  } else{
-    wall = 5;
-  }
-  Serial.println(wall);
-  return wall;
-}
 
 
 void car_front(){   //car goes forward
@@ -213,36 +199,15 @@ void BRUSH_M(){
     delay(100);
   }
 }
-void stepForward(){
-  digitalWrite(ML_Ctrl,HIGH);//set direction control pin of B motor to HIGH 
-  analogWrite(ML_PWM,120);//Set PWM control speed of B motor to 20
-  digitalWrite(MR_Ctrl,HIGH);//set direction control pin of A motor to HIGH 
-  analogWrite(MR_PWM,120);//Set PWM control speed of A motor to 20
-  delay(1170);
-  analogWrite(ML_PWM,0);//set PWM control speed of B motor to 200
-  analogWrite(MR_PWM,0);//set PWM control speed of A motor to 200
-  delay(300);
-}
-void stepRight(){
-  digitalWrite(ML_Ctrl,HIGH);//set direction control pin of B motor to LOW
-  analogWrite(ML_PWM,160);//set PWM control speed of B motor to 200
-  digitalWrite(MR_Ctrl,LOW);//set direction control pin of A motor to HIGH 
-  analogWrite(MR_PWM,160);//set PWM control speed of A motor to 200
-  delay(950);
-  analogWrite(ML_PWM,0);//set PWM control speed of B motor to 200
-  analogWrite(MR_PWM,0);//set PWM control speed of A motor to 200
-  delay(300);
-}
-void stepLeft(){
-  digitalWrite(ML_Ctrl,LOW);//set direction control pin of B motor to LOW
-  analogWrite(ML_PWM,150);//set PWM control speed of B motor to 200
-  digitalWrite(MR_Ctrl,HIGH);//set direction control pin of A motor to HIGH 
-  analogWrite(MR_PWM,150);//set PWM control speed of A motor to 200
-  delay(650);
-  analogWrite(ML_PWM,0);//set PWM control speed of B motor to 200
-  analogWrite(MR_PWM,0);//set PWM control speed of A motor to 200
-  delay(300);
-}
+
+/* (I took this funktion directly from my old prodject)
+ * the distance function measures the distance between the ultrasound sensor and
+ * nearest object. It does this by asking the trigpin to scream
+ * out a singnal. Then ecoPin measures how long it takes
+ * the signal to come back. Then you divide the time by two including
+ * that the sound travels both forwards and backwards. Finally, they are shared
+ * the speed of sound to get the distance.
+ */
 
 long distens() {
   long duration;
@@ -254,6 +219,6 @@ long distens() {
  
   pinMode(echoPin, INPUT);
   duration = pulseIn(echoPin, HIGH);
- 
-  return (duration/2) * 0.0343; 
+  
+  return (duration/2) * 0.0343;  // Convert the time into a distance
 }
