@@ -19,8 +19,8 @@ int mode = 0;
 int right_left = 0;
 int brush = 0;
 
-int trigPinFront = 11;    // Trigger
-int echoPinFront = 10;    // Echo
+int trigPin = 12;    // Trigger
+int echoPin = 13;    // Echo
 
 
 void setup() {
@@ -31,8 +31,8 @@ void setup() {
   pinMode(MB_Ctrl, OUTPUT);//define control pin of brush motor to OUTPUT
   Serial.begin(9600);
   irrecv.enableIRIn(); // Start the receiver
-  pinMode(trigPinFront, OUTPUT);
-  pinMode(echoPinFront, INPUT);
+  pinMode(trigPin, OUTPUT); //define trigpin to OUTPUT
+  pinMode(echoPin, INPUT); //define echopin to INPUT
 }
 
 
@@ -112,27 +112,30 @@ void MODE(){ // MODE is the function that controls what the dust swepper
 }
 
 
-void Auto() {
-  
-  int upperWall = distensToWall();
-  Serial.println (upperWall);
-  stepRight();
-  int rightWall = distensToWall();
-  Serial.println (rightWall);
-  stepRight();
-  int lowerWall = distensToWall();
-  Serial.println (lowerWall);
-  stepRight();
-  int leftWall = distensToWall();
-  Serial.println (leftWall);
 
-  int stepcounterColumn = 1;
+void Auto() { // The vacium gets put in to auto wher it first checks the distenses to
+              // walls. with this info the vacium drives to the upper left corner where
+              // it starts sicksack down to the botem wall.
+  
+  int upperWall = distensToWall(); // Checks the distens to the upper wall
+  /* Serial.println (upperWall); */
+  stepRight(); //90 degrees right
+  int rightWall = distensToWall(); // Checks the distens to the right wall
+  /* Serial.println (rightWall); */
+  stepRight();
+  int lowerWall = distensToWall(); // Checks the distens to the bottom wall
+  /* Serial.println (lowerWall); */
+  stepRight();
+  int leftWall = distensToWall(); // Checks the distens to the left wall
+  /* Serial.println (leftWall); */
+
+  int stepcounterColumn = 1; //robot vacium takes a step untill it reatches the left wall
   while (leftWall > stepcounterColumn){
     stepForward();
     stepcounterColumn += 1;
   }
   stepRight();
-  int stepcounterRow = 1;
+  int stepcounterRow = 1; //robot vacium takes a step untill it reatches the upper wall
   while (upperWall > stepcounterRow){
     stepForward();
     stepcounterRow += 1;
@@ -141,11 +144,12 @@ void Auto() {
 
   stepcounterColumn = 0;
   stepcounterRow = 0;
-  int turncounter = 0;
-/*
-  while (stepcounterRow < (upperWall + lowerWall - 2)){
+  int turncounter = 0; //set to 0 so it won't turn the first time
+
+  while (stepcounterRow < (upperWall + lowerWall - 2)){ //robot vacium takes a step untill it reatches a verticall wall
+                                                        //then it takes a stepdown and dose that same thing over agin.
     
-    if (turncounter = 1){
+    if (turncounter = 1){ // this if the robot vacium turnd right the last time it will turn left this time.
       stepRight();
       stepForward();
       stepRight();
@@ -161,45 +165,31 @@ void Auto() {
       turncounter = 1;
     }
     
-    while (stepcounterColumn < (rightWall + leftWall - 2)){
+    while (stepcounterColumn < (rightWall + leftWall - 2)){ //loop ends when robot car reatches the other verticle wall
       stepForward();
       stepcounterColumn += 1;
     }
     
     stepcounterRow += 1;
   }
-*/
+
 }
 
 
 
-int distensToWall() {
+int distensToWall() { //this funktion tels how many steps ther are left to the next wall every step is 40cm
   int wall;
   delay(250);
   int interval = distens();
   Serial.println(interval);
   delay(250);
-  if (interval < 200 ) {
+  if (interval < 200 ) { //if the wall is furder away then 200cm it sholde count as 5 steps
     wall = ((interval/40) + 1);
   } else{
     wall = 5;
   }
   Serial.println(wall);
   return wall;
-}
-
-long distens() {
-  long duration;
-  digitalWrite(trigPinFront, LOW);
-  delayMicroseconds(5);
-  digitalWrite(trigPinFront, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPinFront, LOW);
- 
-  pinMode(echoPinFront, INPUT);
-  duration = pulseIn(echoPinFront, HIGH);
- 
-  return (duration/2) * 0.0343; 
 }
 
 
@@ -267,31 +257,53 @@ void BRUSH_M(){
 }
 void stepForward(){
   digitalWrite(ML_Ctrl,HIGH);//set direction control pin of B motor to HIGH 
-  analogWrite(ML_PWM,120);//Set PWM control speed of B motor to 20
+  analogWrite(ML_PWM,120);//Set PWM control speed of B motor to 120
   digitalWrite(MR_Ctrl,HIGH);//set direction control pin of A motor to HIGH 
-  analogWrite(MR_PWM,120);//Set PWM control speed of A motor to 20
-  delay(1170);
-  analogWrite(ML_PWM,0);//set PWM control speed of B motor to 200
-  analogWrite(MR_PWM,0);//set PWM control speed of A motor to 200
+  analogWrite(MR_PWM,120);//Set PWM control speed of A motor to 120
+  delay(1170); //delay untill it has driven 40cm
+  analogWrite(ML_PWM,0);//set PWM control speed of B motor to 0
+  analogWrite(MR_PWM,0);//set PWM control speed of A motor to 0
   delay(300);
 }
 void stepRight(){
   digitalWrite(ML_Ctrl,HIGH);//set direction control pin of B motor to LOW
-  analogWrite(ML_PWM,160);//set PWM control speed of B motor to 200
+  analogWrite(ML_PWM,160);//set PWM control speed of B motor to 160
   digitalWrite(MR_Ctrl,LOW);//set direction control pin of A motor to HIGH 
-  analogWrite(MR_PWM,160);//set PWM control speed of A motor to 200
-  delay(950);
-  analogWrite(ML_PWM,0);//set PWM control speed of B motor to 200
-  analogWrite(MR_PWM,0);//set PWM control speed of A motor to 200
+  analogWrite(MR_PWM,160);//set PWM control speed of A motor to 160
+  delay(950); //delay untill it has turnd 90 degress
+  analogWrite(ML_PWM,0);//set PWM control speed of B motor to 0
+  analogWrite(MR_PWM,0);//set PWM control speed of A motor to 0
   delay(300);
 }
 void stepLeft(){
   digitalWrite(ML_Ctrl,LOW);//set direction control pin of B motor to LOW
-  analogWrite(ML_PWM,150);//set PWM control speed of B motor to 200
+  analogWrite(ML_PWM,150);//set PWM control speed of B motor to 150
   digitalWrite(MR_Ctrl,HIGH);//set direction control pin of A motor to HIGH 
-  analogWrite(MR_PWM,150);//set PWM control speed of A motor to 200
-  delay(650);
-  analogWrite(ML_PWM,0);//set PWM control speed of B motor to 200
-  analogWrite(MR_PWM,0);//set PWM control speed of A motor to 200
+  analogWrite(MR_PWM,150);//set PWM control speed of A motor to 150
+  delay(650); //delay untill it has turnd 90 degress
+  analogWrite(ML_PWM,0);//set PWM control speed of B motor to 0
+  analogWrite(MR_PWM,0);//set PWM control speed of A motor to 0
   delay(300);
+}
+
+/* (I took this funktion directly from my old prodject)
+ * the distance function measures the distance between the ultrasound sensor and
+ * nearest object. It does this by asking the trigpin to scream
+ * out a singnal. Then ecoPin measures how long it takes
+ * the signal to come back. Then you divide the time by two including
+ * that the sound travels both forwards and backwards. Finally, they are shared
+ * the speed of sound to get the distance.
+ */
+long distens() {
+  long duration;
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(5);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+ 
+  pinMode(echoPin, INPUT);
+  duration = pulseIn(echoPin, HIGH);
+ 
+  return (duration/2) * 0.0343;  // Convert the time into a distance
 }
